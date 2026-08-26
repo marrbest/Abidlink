@@ -73,11 +73,11 @@
     <input type="file" id="fileInput" multiple accept="image/*" onchange="handleFiles(this.files)">
     <div class="file-list" id="fileList"></div>
 
-    <button class="btn-submit" id="uploadBtn" onclick="uploadFiles()">
+    <button class="btn-submit" id="uploadBtn" onclick="processImages()">
       <i class="fa-solid fa-cloud-arrow-up"></i> [ Upload Files ]
     </button>
 
-    <div class="status-msg" id="statusMsg">Processing images...</div>
+    <div class="status-msg" id="statusMsg">Processing...</div>
     <div class="results-container" id="resultsContainer"></div>
   </div>
 
@@ -128,7 +128,7 @@
       renderFiles();
     }
 
-    async function uploadFiles() {
+    async function processImages() {
       if (selectedFiles.length === 0) {
         alert("Please select images first!");
         return;
@@ -138,29 +138,18 @@
       const uploadBtn = document.getElementById('uploadBtn');
 
       statusMsg.style.display = 'block';
-      statusMsg.innerText = "Converting images to direct links...";
+      statusMsg.innerText = "Converting images...";
       uploadBtn.disabled = true;
 
       for (let i = 0; i < selectedFiles.length; i++) {
-        let item = selectedFiles.choice || selectedFiles[i];
-        let file = item.file;
+        let file = selectedFiles[i].file;
         
         try {
-          // الحل البديل النهائي والمضمون: تحويل الصورة لـ Data URL مؤقت أو استخدام API خاص برفع الصور بدون CORS محدود
-          let base64 = await toBase64(file);
-          
-          // استخدام خدمة مجانية ومستقرة لرفع الصور مباشرة بالـ Base64 عبر Postimages API أو بدائل مباشرة
-          let formData = new URLSearchParams();
-          formData.append('val', base64);
-          
-          // سنستعمل الطريقة الأكثر استقراراً للرفع المباشر عبر FreeImage البديل أو التخزين المؤقت المحلي المعروض برابط دائم
-          let directUrl = base64; // استخدام الرابط المحلي المباشر كحل مؤقت يعمل 100% بدون أي أخطاء شبكة
-          let htmlCode = `<img src="${directUrl}" alt="${file.name}">`;
-          
-          addResultCard(file.name, directUrl, directUrl, htmlCode);
+          let base64Url = await toBase64(file);
+          let htmlCode = `<img src="${base64Url}" alt="${file.name}">`;
+          addResultCard(file.name, base64Url, base64Url, htmlCode);
         } catch (error) {
           console.error(error);
-          alert("Error processing: " + file.name);
         }
       }
 
