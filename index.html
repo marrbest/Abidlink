@@ -147,8 +147,6 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      position: relative;
-      overflow: hidden;
     }
 
     .file-item-header {
@@ -156,7 +154,6 @@
       justify-content: space-between;
       align-items: center;
       font-size: 13px;
-      width: 100%;
     }
 
     .file-info {
@@ -175,9 +172,7 @@
       height: 32px;
       border-radius: 6px;
       object-fit: cover;
-      cursor: pointer;
       border: 1px solid #333;
-      transition: transform 0.2s;
     }
 
     .file-name {
@@ -200,21 +195,6 @@
       font-size: 12px;
     }
 
-    .progress-bar-container {
-      width: 100%;
-      height: 5px;
-      background-color: #111;
-      border-radius: 3px;
-      overflow: hidden;
-    }
-
-    .progress-bar-fill {
-      height: 100%;
-      width: 0%;
-      background-color: #25c960;
-      transition: width 0.1s linear;
-    }
-
     .btn-submit {
       width: 100%;
       background-color: #ff7700;
@@ -230,11 +210,6 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: 0.2s;
-    }
-
-    .btn-submit:hover {
-      background-color: #e66a00;
     }
 
     .status-msg {
@@ -270,14 +245,12 @@
       color: #ff4d4d;
       cursor: pointer;
       font-size: 16px;
-      padding: 4px;
     }
 
     .result-preview {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding-right: 25px;
     }
 
     .result-preview img {
@@ -286,16 +259,6 @@
       object-fit: cover;
       border-radius: 8px;
       border: 1px solid #333;
-    }
-
-    .result-preview-info p {
-      font-size: 13px;
-      font-weight: bold;
-      color: #fff;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 280px;
     }
 
     .link-group {
@@ -342,43 +305,6 @@
       cursor: pointer;
     }
 
-    .btn-copy.copied {
-      background-color: #25c960 !important;
-      color: #ffffff !important;
-    }
-
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.85);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-      padding: 20px;
-    }
-
-    .modal-content {
-      background-color: #1a1a1d;
-      border: 1px solid #333;
-      border-radius: 12px;
-      padding: 20px;
-      max-width: 90%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 15px;
-    }
-
-    .modal-content img {
-      max-width: 100%;
-      max-height: 60vh;
-      border-radius: 8px;
-    }
-
     .footer {
       margin-top: 25px;
       font-size: 12px;
@@ -395,18 +321,13 @@
 
   <div class="header-bar">
     <div class="title-area">
-      <div class="logo-icon">
-        <i class="fa-solid fa-cloud-arrow-up"></i>
-      </div>
+      <div class="logo-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
       <div class="title-text">
         <h1>abidlink</h1>
         <p>Upload and convert images to instant direct links</p>
       </div>
     </div>
-    <div class="badge">
-      ⚡ FREE
-      <span>100%</span>
-    </div>
+    <div class="badge">⚡ FREE <span>100%</span></div>
   </div>
 
   <div class="main-card">
@@ -414,37 +335,23 @@
     <p class="sub-title">Please select files from your device</p>
 
     <div class="upload-box" onclick="document.getElementById('fileInput').click()">
-      <div class="upload-icon">
-        <i class="fa-solid fa-image"></i>
-      </div>
+      <div class="upload-icon"><i class="fa-solid fa-image"></i></div>
       <div class="upload-text">Click here to select images</div>
       <div class="upload-subtext">You can select multiple images (Max 10 images)</div>
     </div>
 
     <input type="file" id="fileInput" multiple accept="image/*" onchange="handleFiles(this.files)">
-
     <div class="file-list" id="fileList"></div>
 
     <button class="btn-submit" id="uploadBtn" onclick="uploadFiles()">
-      <i class="fa-solid fa-cloud-arrow-up"></i>
-      [ Upload Files ]
+      <i class="fa-solid fa-cloud-arrow-up"></i> [ Upload Files ]
     </button>
 
     <div class="status-msg" id="statusMsg">Uploading... Please wait.</div>
-
     <div class="results-container" id="resultsContainer"></div>
   </div>
 
-  <div class="modal-overlay" id="imageModal" onclick="closeModal()">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <img id="modalImg" src="" alt="Enlarged preview">
-      <button class="btn-copy" onclick="closeModal()" style="width: 100%; padding: 10px;">Close</button>
-    </div>
-  </div>
-
-  <div class="footer">
-    All rights reserved © abidlink
-  </div>
+  <div class="footer">All rights reserved © abidlink</div>
 
   <script>
     let selectedFiles = [];
@@ -458,8 +365,6 @@
       newFiles.forEach(file => {
         selectedFiles.push({
           file: file,
-          loaded: true,
-          progress: 100,
           previewUrl: URL.createObjectURL(file)
         });
       });
@@ -474,11 +379,10 @@
         const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
         const fileItem = document.createElement('div');
         fileItem.className = 'file-item';
-
         fileItem.innerHTML = `
           <div class="file-item-header">
             <div class="file-info">
-              <img src="${item.previewUrl}" class="thumb-mini" alt="thumb">
+              <img src="${item.previewUrl}" class="thumb-mini">
               <span class="file-name">${file.name}</span>
               <span class="file-size">(${sizeInMB} MB)</span>
             </div>
@@ -503,66 +407,73 @@
       }
 
       const statusMsg = document.getElementById('statusMsg');
-      const uploadBtn = document.getElementById('apiUploadBtn') || document.getElementById('uploadBtn');
+      const uploadBtn = document.getElementById('uploadBtn');
 
       statusMsg.style.display = 'block';
-      statusMsg.innerText = "Uploading to ImgBB... Please wait.";
+      statusMsg.innerText = "Uploading images... Please wait.";
       uploadBtn.disabled = true;
-      uploadBtn.style.opacity = "0.5";
 
       for (let i = 0; i < selectedFiles.length; i++) {
-        let item = selectedFiles[i];
-        let file = item.file;
-        let formData = new FormData();
+        let file = selectedFiles[i].file;
         
-        // استبدال API بـ ImgBB المجاني اللي كيقبل CORS بدون مشاكل
-        formData.append("key", "d8528d25244199c756de6503c80e1598");
-        formData.append("image", file);
-
         try {
-          let response = await fetch("https://api.imgbb.com/1/upload", {
+          // تحويل الصورة لـ Base64 لتفادي مشاكل Multipart CORS
+          let base64Data = await toBase64(file);
+          let cleanBase64 = base64Data.split(',')[1];
+
+          let formData = new FormData();
+          formData.append("image", cleanBase64);
+
+          // إرسال عبر CORS Proxy يتجاوز حظر GitHub Pages
+          let response = await fetch("https://corsproxy.io/?https://api.imgur.com/3/image", {
             method: "POST",
+            headers: {
+              "Authorization": "Client-ID 546c25a59c58ad7"
+            },
             body: formData
           });
 
           let result = await response.json();
           if (result.success) {
-            let directUrl = result.data.url;
+            let directUrl = result.data.link;
             let htmlCode = `<img src="${directUrl}" alt="${file.name}">`;
             addResultCard(file.name, directUrl, directUrl, htmlCode);
           } else {
-            alert("Upload error for: " + file.name);
+            alert("Upload failed for: " + file.name);
           }
         } catch (error) {
-          console.error("Upload Error:", error);
-          alert("Network error while uploading image.");
+          console.error(error);
+          alert("Network Error with file: " + file.name);
         }
       }
 
-      statusMsg.innerText = "Upload completed successfully!";
+      statusMsg.innerText = "Done!";
       uploadBtn.disabled = false;
-      uploadBtn.style.opacity = "1";
       selectedFiles = [];
       renderFiles();
+    }
+
+    function toBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
     }
 
     function addResultCard(fileName, imgSrc, pngUrl, htmlCode) {
       const resultsContainer = document.getElementById('resultsContainer');
       const card = document.createElement('div');
       card.className = 'result-card';
-      
       card.innerHTML = `
-        <div class="card-delete-btn" onclick="removeCard(this)" title="Delete">
+        <div class="card-delete-btn" onclick="this.closest('.result-card').remove()">
           <i class="fa-solid fa-trash"></i>
         </div>
-
         <div class="result-preview">
-          <img src="${imgSrc}" onclick="openModal('${imgSrc}')" alt="Preview">
-          <div class="result-preview-info">
-            <p>${fileName}</p>
-          </div>
+          <img src="${imgSrc}">
+          <p style="font-size:13px; font-weight:bold;">${fileName}</p>
         </div>
-
         <div class="link-group">
           <span class="link-label">Direct Link</span>
           <div class="link-box">
@@ -570,7 +481,6 @@
             <button class="btn-copy" onclick="copyText(this)">Copy</button>
           </div>
         </div>
-
         <div class="link-group">
           <span class="link-label">HTML Code</span>
           <div class="link-box">
@@ -579,37 +489,16 @@
           </div>
         </div>
       `;
-
       resultsContainer.appendChild(card);
-    }
-
-    function openModal(imgSrc) {
-      const modal = document.getElementById('imageModal');
-      const modalImg = document.getElementById('modalImg');
-      modalImg.src = imgSrc;
-      modal.style.display = 'flex';
-    }
-
-    function closeModal() {
-      document.getElementById('imageModal').style.display = 'none';
-    }
-
-    function removeCard(btn) {
-      btn.closest('.result-card').remove();
     }
 
     function copyText(btn) {
       const input = btn.previousElementSibling;
       navigator.clipboard.writeText(input.value).then(() => {
         btn.innerText = "Copied!";
-        btn.classList.add("copied");
-        setTimeout(() => {
-          btn.innerText = "Copy";
-          btn.classList.remove("copied");
-        }, 2000);
+        setTimeout(() => { btn.innerText = "Copy"; }, 2000);
       });
     }
   </script>
-
 </body>
 </html>
