@@ -180,10 +180,6 @@
       transition: transform 0.2s;
     }
 
-    .thumb-mini:hover {
-      transform: scale(1.1);
-    }
-
     .file-name {
       overflow: hidden;
       text-overflow: ellipsis;
@@ -241,6 +237,14 @@
       background-color: #e66a00;
     }
 
+    .status-msg {
+      margin-top: 15px;
+      font-size: 13px;
+      text-align: center;
+      color: #ffaa00;
+      display: none;
+    }
+
     .results-container {
       margin-top: 20px;
       display: flex;
@@ -267,12 +271,6 @@
       cursor: pointer;
       font-size: 16px;
       padding: 4px;
-      transition: transform 0.2s, color 0.2s;
-    }
-
-    .card-delete-btn:hover {
-      color: #ff1a1a;
-      transform: scale(1.1);
     }
 
     .result-preview {
@@ -288,7 +286,6 @@
       object-fit: cover;
       border-radius: 8px;
       border: 1px solid #333;
-      cursor: pointer;
     }
 
     .result-preview-info p {
@@ -343,21 +340,11 @@
       font-weight: bold;
       font-size: 11px;
       cursor: pointer;
-      transition: background-color 0.2s, color 0.2s;
-      min-width: 60px;
     }
 
     .btn-copy.copied {
       background-color: #25c960 !important;
       color: #ffffff !important;
-    }
-
-    .status-msg {
-      margin-top: 15px;
-      font-size: 13px;
-      text-align: center;
-      color: #ffaa00;
-      display: none;
     }
 
     .modal-overlay {
@@ -380,52 +367,16 @@
       border-radius: 12px;
       padding: 20px;
       max-width: 90%;
-      max-height: 90%;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 15px;
-      position: relative;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     }
 
     .modal-content img {
       max-width: 100%;
       max-height: 60vh;
       border-radius: 8px;
-      object-fit: contain;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 15px;
-      width: 100%;
-      justify-content: center;
-    }
-
-    .btn-modal-delete {
-      background-color: #ff4d4d;
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-    }
-
-    .btn-modal-close {
-      background-color: #333;
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 14px;
     }
 
     .footer {
@@ -484,15 +435,10 @@
     <div class="results-container" id="resultsContainer"></div>
   </div>
 
-  <div class="modal-overlay" id="imageModal">
-    <div class="modal-content">
+  <div class="modal-overlay" id="imageModal" onclick="closeModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
       <img id="modalImg" src="" alt="Enlarged preview">
-      <div class="modal-actions">
-        <button class="btn-modal-delete" id="modalDeleteBtn">
-          <i class="fa-solid fa-trash"></i> Delete
-        </button>
-        <button class="btn-modal-close" onclick="closeModal()">Close</button>
-      </div>
+      <button class="btn-copy" onclick="closeModal()" style="width: 100%; padding: 10px;">Close</button>
     </div>
   </div>
 
@@ -502,47 +448,37 @@
 
   <script>
     let selectedFiles = [];
-    let currentPreviewIndex = null;
 
     function handleFiles(files) {
       const newFiles = Array.from(files);
-
       if (selectedFiles.length + newFiles.length > 10) {
         alert("Maximum limit is 10 images");
         return;
       }
-
       newFiles.forEach(file => {
         selectedFiles.push({
           file: file,
-          loaded: false,
-          progress: 0,
+          loaded: true,
+          progress: 100,
           previewUrl: URL.createObjectURL(file)
         });
       });
-
       renderFiles();
-      simulateProgress();
     }
 
     function renderFiles() {
       const fileList = document.getElementById('fileList');
       fileList.innerHTML = '';
-
       selectedFiles.forEach((item, index) => {
         const file = item.file;
         const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
         const fileItem = document.createElement('div');
         fileItem.className = 'file-item';
 
-        const iconOrThumb = item.loaded
-          ? `<img src="${item.previewUrl}" class="thumb-mini" onclick="openModal(${index})" alt="thumb">`
-          : `<i class="fa-regular fa-image" style="color: #ffaa00; font-size: 18px;"></i>`;
-
         fileItem.innerHTML = `
           <div class="file-item-header">
             <div class="file-info">
-              ${iconOrThumb}
+              <img src="${item.previewUrl}" class="thumb-mini" alt="thumb">
               <span class="file-name">${file.name}</span>
               <span class="file-size">(${sizeInMB} MB)</span>
             </div>
@@ -550,66 +486,27 @@
               <i class="fa-solid fa-trash"></i> Delete
             </div>
           </div>
-          ${!item.loaded ? `
-          <div class="progress-bar-container">
-            <div class="progress-bar-fill" style="width: ${item.progress}%;"></div>
-          </div>` : ''}
         `;
         fileList.appendChild(fileItem);
-      });
-    }
-
-    function simulateProgress() {
-      selectedFiles.forEach((item) => {
-        if (!item.loaded) {
-          let interval = setInterval(() => {
-            if (item.progress >= 100) {
-              item.loaded = true;
-              item.progress = 100;
-              clearInterval(interval);
-              renderFiles();
-            } else {
-              item.progress += 20;
-              renderFiles();
-            }
-          }, 50);
-        }
       });
     }
 
     function removeFile(index) {
       selectedFiles.splice(index, 1);
       renderFiles();
-      closeModal();
-    }
-
-    function openModal(index) {
-      currentPreviewIndex = index;
-      const modal = document.getElementById('imageModal');
-      const modalImg = document.getElementById('modalImg');
-      const modalDeleteBtn = document.getElementById('modalDeleteBtn');
-
-      modalImg.src = selectedFiles[index].previewUrl;
-      modalDeleteBtn.style.display = 'flex';
-      modalDeleteBtn.onclick = () => removeFile(index);
-      
-      modal.style.display = 'flex';
-    }
-
-    function closeModal() {
-      const modal = document.getElementById('imageModal');
-      modal.style.display = 'none';
-      currentPreviewIndex = null;
     }
 
     async function uploadFiles() {
-      if (selectedFiles.length === 0) return;
+      if (selectedFiles.length === 0) {
+        alert("Please select images first!");
+        return;
+      }
 
       const statusMsg = document.getElementById('statusMsg');
-      const uploadBtn = document.getElementById('uploadBtn');
+      const uploadBtn = document.getElementById('apiUploadBtn') || document.getElementById('uploadBtn');
 
       statusMsg.style.display = 'block';
-      statusMsg.innerText = "Uploading images... Please wait.";
+      statusMsg.innerText = "Uploading to ImgBB... Please wait.";
       uploadBtn.disabled = true;
       uploadBtn.style.opacity = "0.5";
 
@@ -618,29 +515,27 @@
         let file = item.file;
         let formData = new FormData();
         
-        // استخدام API الخاص بـ FreeImageHost
-        formData.append("key", "6d207e02198a847aa98d0a2a901485a5");
-        formData.append("action", "upload");
-        formData.append("source", file);
-        formData.append("format", "json");
+        // استبدال API بـ ImgBB المجاني اللي كيقبل CORS بدون مشاكل
+        formData.append("key", "d8528d25244199c756de6503c80e1598");
+        formData.append("image", file);
 
         try {
-          let response = await fetch("https://freeimage.host/api/1/upload", {
+          let response = await fetch("https://api.imgbb.com/1/upload", {
             method: "POST",
             body: formData
           });
 
           let result = await response.json();
-          if (result.status_code === 200) {
-            let directUrl = result.image.url;
+          if (result.success) {
+            let directUrl = result.data.url;
             let htmlCode = `<img src="${directUrl}" alt="${file.name}">`;
-            addResultCard(file.name, item.previewUrl, directUrl, htmlCode);
+            addResultCard(file.name, directUrl, directUrl, htmlCode);
           } else {
             alert("Upload error for: " + file.name);
           }
         } catch (error) {
           console.error("Upload Error:", error);
-          alert("Network error while uploading: " + file.name);
+          alert("Network error while uploading image.");
         }
       }
 
@@ -662,14 +557,14 @@
         </div>
 
         <div class="result-preview">
-          <img src="${imgSrc}" onclick="openResultModal('${imgSrc}')" alt="Preview">
+          <img src="${imgSrc}" onclick="openModal('${imgSrc}')" alt="Preview">
           <div class="result-preview-info">
             <p>${fileName}</p>
           </div>
         </div>
 
         <div class="link-group">
-          <span class="link-label">PNG Direct Link</span>
+          <span class="link-label">Direct Link</span>
           <div class="link-box">
             <input type="text" class="link-input" value="${pngUrl}" readonly>
             <button class="btn-copy" onclick="copyText(this)">Copy</button>
@@ -688,19 +583,19 @@
       resultsContainer.appendChild(card);
     }
 
-    function openResultModal(imgSrc) {
+    function openModal(imgSrc) {
       const modal = document.getElementById('imageModal');
       const modalImg = document.getElementById('modalImg');
-      const modalDeleteBtn = document.getElementById('modalDeleteBtn');
-
       modalImg.src = imgSrc;
-      modalDeleteBtn.style.display = 'none';
       modal.style.display = 'flex';
     }
 
+    function closeModal() {
+      document.getElementById('imageModal').style.display = 'none';
+    }
+
     function removeCard(btn) {
-      const card = btn.closest('.result-card');
-      card.remove();
+      btn.closest('.result-card').remove();
     }
 
     function copyText(btn) {
@@ -708,7 +603,6 @@
       navigator.clipboard.writeText(input.value).then(() => {
         btn.innerText = "Copied!";
         btn.classList.add("copied");
-
         setTimeout(() => {
           btn.innerText = "Copy";
           btn.classList.remove("copied");
