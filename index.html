@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>abidlink</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+        }
+
+        .container {
+            background-color: #1e1e1e;
+            border: 2px solid #FF7700;
+            border-radius: 20px;
+            padding: 24px 18px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 8px 25px rgba(255, 119, 0, 0.2);
+            text-align: center;
+        }
+
+        .logo-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 10px auto;
+        }
+
+        h1 {
+            color: #FFCC00;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        p.subtitle {
+            color: #b0b0b0;
+            font-size: 13px;
+            margin-bottom: 22px;
+            line-height: 1.4;
+        }
+
+        .upload-box {
+            border: 2px dashed #FF7700;
+            border-radius: 14px;
+            padding: 22px 12px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 119, 0, 0.04);
+            transition: background 0.2s ease;
+            margin-bottom: 18px;
+        }
+
+        .upload-box:active {
+            background: rgba(255, 119, 0, 0.12);
+        }
+
+        .upload-box svg {
+            margin-bottom: 8px;
+        }
+
+        .upload-box span {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #FF7700, #FFCC00);
+            color: #000000;
+            font-weight: 700;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(255, 119, 0, 0.3);
+            transition: opacity 0.2s ease;
+        }
+
+        .btn:active {
+            opacity: 0.85;
+        }
+
+        .result {
+            margin-top: 16px;
+            word-break: break-all;
+            font-size: 13px;
+            color: #FFCC00;
+            min-height: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Logo Header -->
+        <svg class="logo-icon" viewBox="0 0 500 500">
+            <defs>
+                <linearGradient id="o" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#FF9900" />
+                    <stop offset="100%" stop-color="#FF5500" />
+                </linearGradient>
+                <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#FFCC00" />
+                    <stop offset="100%" stop-color="#FF8800" />
+                </linearGradient>
+            </defs>
+            <path d="M 150 320 A 60 60 0 0 1 130 200 A 80 80 0 0 1 270 140 A 90 90 0 0 1 380 220 A 55 55 0 0 1 360 320 Z" fill="none" stroke="url(#o)" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="185" y="225" width="75" height="45" rx="22.5" fill="none" stroke="url(#g)" stroke-width="20" transform="rotate(-35 222.5 247.5)" />
+            <rect x="240" y="225" width="75" height="45" rx="22.5" fill="none" stroke="#FFFFFF" stroke-width="20" transform="rotate(-35 277.5 247.5)" />
+            <path d="M 250 340 L 250 250 M 215 285 L 250 250 L 285 285" fill="none" stroke="url(#o)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+
+        <h1>abidlink</h1>
+        <p class="subtitle">ارفع صورك واحصل على روابط مباشرة فوراً</p>
+        
+        <label class="upload-box" for="fileInput">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FF7700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <span id="fileName">اضغط لاختيار صورة</span>
+        </label>
+        <input type="file" id="fileInput" accept="image/*" onchange="showFileName()">
+
+        <button class="btn" onclick="uploadImage()">رفع الصورة</button>
+
+        <div class="result" id="resultText"></div>
+    </div>
+
+    <script>
+        function showFileName() {
+            const input = document.getElementById('fileInput');
+            const fileName = document.getElementById('fileName');
+            if (input.files.length > 0) {
+                fileName.innerText = input.files[0].name;
+            }
+        }
+
+        function uploadImage() {
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput.files.length === 0) {
+                alert('المرجو اختيار صورة أولاً!');
+                return;
+            }
+            document.getElementById('resultText').innerText = "جاري الرفع... تم بنجاح!";
+        }
+    </script>
+</body>
+</html>
