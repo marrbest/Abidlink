@@ -148,7 +148,6 @@
       flex-direction: column;
       gap: 8px;
       position: relative;
-      overflow: hidden;
     }
 
     .file-item-header {
@@ -177,11 +176,6 @@
       object-fit: cover;
       cursor: pointer;
       border: 1px solid #333;
-      transition: transform 0.2s;
-    }
-
-    .thumb-mini:hover {
-      transform: scale(1.1);
     }
 
     .file-name {
@@ -255,7 +249,7 @@
       padding: 14px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       position: relative;
     }
 
@@ -266,13 +260,6 @@
       color: #ff4d4d;
       cursor: pointer;
       font-size: 16px;
-      padding: 4px;
-      transition: transform 0.2s, color 0.2s;
-    }
-
-    .card-delete-btn:hover {
-      color: #ff1a1a;
-      transform: scale(1.1);
     }
 
     .result-preview {
@@ -283,12 +270,11 @@
     }
 
     .result-preview img {
-      width: 55px;
-      height: 55px;
+      width: 50px;
+      height: 50px;
       object-fit: cover;
       border-radius: 8px;
       border: 1px solid #333;
-      cursor: pointer;
     }
 
     .result-preview-info p {
@@ -298,17 +284,17 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 280px;
+      max-width: 260px;
     }
 
     .link-group {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 5px;
     }
 
     .link-label {
-      font-size: 10px;
+      font-size: 11px;
       color: #ffaa00;
       font-weight: bold;
       text-transform: uppercase;
@@ -338,13 +324,12 @@
       background-color: #ff7700;
       color: #000;
       border: none;
-      padding: 6px 14px;
+      padding: 6px 12px;
       border-radius: 4px;
       font-weight: bold;
       font-size: 11px;
       cursor: pointer;
-      transition: background-color 0.2s, color 0.2s;
-      min-width: 60px;
+      transition: 0.2s;
     }
 
     .btn-copy.copied {
@@ -385,8 +370,6 @@
       flex-direction: column;
       align-items: center;
       gap: 15px;
-      position: relative;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     }
 
     .modal-content img {
@@ -394,27 +377,6 @@
       max-height: 60vh;
       border-radius: 8px;
       object-fit: contain;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 15px;
-      width: 100%;
-      justify-content: center;
-    }
-
-    .btn-modal-delete {
-      background-color: #ff4d4d;
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
     }
 
     .btn-modal-close {
@@ -425,7 +387,6 @@
       border-radius: 8px;
       font-weight: bold;
       cursor: pointer;
-      font-size: 14px;
     }
 
     .footer {
@@ -486,13 +447,8 @@
 
   <div class="modal-overlay" id="imageModal">
     <div class="modal-content">
-      <img id="modalImg" src="" alt="Enlarged preview">
-      <div class="modal-actions">
-        <button class="btn-modal-delete" id="modalDeleteBtn">
-          <i class="fa-solid fa-trash"></i> Delete
-        </button>
-        <button class="btn-modal-close" onclick="closeModal()">Close</button>
-      </div>
+      <img id="modalImg" src="" alt="Preview">
+      <button class="btn-modal-close" onclick="closeModal()">Close</button>
     </div>
   </div>
 
@@ -502,14 +458,12 @@
 
   <script>
     let selectedFiles = [];
-    let currentPreviewIndex = null;
-    let isUploadedState = false;
 
     function handleFiles(files) {
       const newFiles = Array.from(files);
 
       if (selectedFiles.length + newFiles.length > 10) {
-        alert("Maximum limit is 10 images");
+        alert("Maximum limit is 10 images at a time!");
         return;
       }
 
@@ -537,7 +491,7 @@
         fileItem.className = 'file-item';
 
         const iconOrThumb = item.loaded
-          ? `<img src="${item.previewUrl}" class="thumb-mini" onclick="openModal(${index})" alt="thumb">`
+          ? `<img src="${item.previewUrl}" class="thumb-mini" onclick="openModal('${item.previewUrl}')" alt="thumb">`
           : `<i class="fa-regular fa-image" style="color: #ffaa00; font-size: 18px;"></i>`;
 
         fileItem.innerHTML = `
@@ -561,7 +515,7 @@
     }
 
     function simulateProgress() {
-      selectedFiles.forEach((item, index) => {
+      selectedFiles.forEach((item) => {
         if (!item.loaded) {
           let interval = setInterval(() => {
             if (item.progress >= 100) {
@@ -570,10 +524,10 @@
               clearInterval(interval);
               renderFiles();
             } else {
-              item.progress += 20;
+              item.progress += 25;
               renderFiles();
             }
-          }, 100);
+          }, 80);
         }
       });
     }
@@ -581,29 +535,15 @@
     function removeFile(index) {
       selectedFiles.splice(index, 1);
       renderFiles();
-      closeModal();
     }
 
-    function openModal(index) {
-      currentPreviewIndex = index;
-      const modal = document.getElementById('imageModal');
-      const modalImg = document.getElementById('modalImg');
-      const modalDeleteBtn = document.getElementById('modalDeleteBtn');
-
-      modalImg.src = selectedFiles[index].previewUrl;
-      modalDeleteBtn.style.display = 'flex';
-      modalDeleteBtn.onclick = () => removeFile(index);
-      
-      modal.style.display = 'flex';
-      history.pushState({ modalOpen: true }, "");
+    function openModal(url) {
+      document.getElementById('modalImg').src = url;
+      document.getElementById('imageModal').style.display = 'flex';
     }
 
     function closeModal() {
-      const modal = document.getElementById('imageModal');
-      if (modal.style.display === 'flex') {
-        modal.style.display = 'none';
-        currentPreviewIndex = null;
-      }
+      document.getElementById('imageModal').style.display = 'none';
     }
 
     async function uploadFiles() {
@@ -636,8 +576,10 @@
 
           let result = await response.json();
           if (result.success) {
-            let directUrl = result.data.url;
+            // direct short url (e.g. https://i.ibb.co/xxxxx/filename.jpg)
+            let directUrl = result.data.image.url || result.data.url;
             let htmlCode = `<img src="${directUrl}" alt="${file.name}">`;
+            
             addResultCard(file.name, item.previewUrl, directUrl, htmlCode);
           } else {
             alert("Upload error for: " + file.name);
@@ -653,25 +595,20 @@
       uploadBtn.style.opacity = "1";
       selectedFiles = [];
       renderFiles();
-
-      if (!isUploadedState) {
-        history.pushState({ uploaded: true }, "");
-        isUploadedState = true;
-      }
     }
 
-    function addResultCard(fileName, imgSrc, pngUrl, htmlCode) {
+    function addResultCard(fileName, imgSrc, directUrl, htmlCode) {
       const resultsContainer = document.getElementById('resultsContainer');
       const card = document.createElement('div');
       card.className = 'result-card';
       
       card.innerHTML = `
-        <div class="card-delete-btn" onclick="removeCard(this)" title="Delete">
+        <div class="card-delete-btn" onclick="this.closest('.result-card').remove()" title="Delete">
           <i class="fa-solid fa-trash"></i>
         </div>
 
         <div class="result-preview">
-          <img src="${imgSrc}" onclick="openResultModal('${imgSrc}')" alt="Preview">
+          <img src="${imgSrc}" onclick="openModal('${imgSrc}')" alt="Preview">
           <div class="result-preview-info">
             <p>${fileName}</p>
           </div>
@@ -680,13 +617,13 @@
         <div class="link-group">
           <span class="link-label">Direct Link</span>
           <div class="link-box">
-            <input type="text" class="link-input" value="${pngUrl}" readonly>
+            <input type="text" class="link-input" value="${directUrl}" readonly>
             <button class="btn-copy" onclick="copyText(this)">Copy</button>
           </div>
         </div>
 
         <div class="link-group">
-          <span class="link-label">HTML Code</span>
+          <span class="link-label">HTML Link</span>
           <div class="link-box">
             <input type="text" class="link-input" value="${htmlCode.replace(/"/g, '&quot;')}" readonly>
             <button class="btn-copy" onclick="copyText(this)">Copy</button>
@@ -695,22 +632,6 @@
       `;
 
       resultsContainer.appendChild(card);
-    }
-
-    function openResultModal(imgSrc) {
-      const modal = document.getElementById('imageModal');
-      const modalImg = document.getElementById('modalImg');
-      const modalDeleteBtn = document.getElementById('modalDeleteBtn');
-
-      modalImg.src = imgSrc;
-      modalDeleteBtn.style.display = 'none';
-      modal.style.display = 'flex';
-      history.pushState({ modalOpen: true }, "");
-    }
-
-    function removeCard(btn) {
-      const card = btn.closest('.result-card');
-      card.remove();
     }
 
     function copyText(btn) {
@@ -725,28 +646,6 @@
         }, 2000);
       });
     }
-
-    function resetApp() {
-      document.getElementById('resultsContainer').innerHTML = '';
-      document.getElementById('statusMsg').style.display = 'none';
-      document.getElementById('fileInput').value = '';
-      selectedFiles = [];
-      renderFiles();
-      isUploadedState = false;
-    }
-
-    window.addEventListener('popstate', function(e) {
-      const modal = document.getElementById('imageModal');
-      
-      if (modal.style.display === 'flex') {
-        closeModal();
-        return;
-      }
-
-      if (isUploadedState) {
-        resetApp();
-      }
-    });
   </script>
 
 </body>
