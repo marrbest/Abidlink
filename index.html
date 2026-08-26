@@ -405,7 +405,7 @@
 
   <div class="main-card">
     <h2 class="main-title">Select images to upload</h2>
-    <p class="sub-title">Supports PNG, JPG, GIF, WEBP</p>
+    <p class="sub-title">Supports PNG, JPG, WEBP</p>
 
     <div class="upload-box" onclick="document.getElementById('fileInput').click()">
       <div class="upload-icon">
@@ -460,7 +460,7 @@
 
       selectedFiles.forEach((item, index) => {
         const file = item.file;
-        const sizeInMB = (file.size / (1024 * 1024)).data ? 0 : (file.size / (1024 * 1024)).toFixed(2);
+        const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
         const fileItem = document.createElement('div');
         fileItem.className = 'file-item';
 
@@ -494,24 +494,25 @@
       document.getElementById('imageModal').style.display = 'none';
     }
 
-    // الرفع عبر سيرفر Catbox.moe (ما كيديرش مشاكل CORS وكيقبل أي ملفات مباشرة)
+    // الرفع عبر سيرفر Telegra.ph (ما كيديرش نهائياً مشاكل CORS وخدام 100%)
     async function uploadSingleFile(file) {
       try {
         let formData = new FormData();
-        formData.append("reqtype", "fileupload");
-        formData.append("fileToUpload", file);
+        formData.append("file", file);
 
-        let response = await fetch("https://catbox.moe/user/api.php", {
+        let response = await fetch("https://telegra.ph/upload", {
           method: "POST",
           body: formData
         });
 
-        let directUrl = await response.text();
-        if (directUrl && directUrl.startsWith("http")) {
-          return directUrl.trim();
+        let result = await response.json();
+        
+        // النتيجة كترجع بـ لستة فيها مسار الصورة بحال: [{src: "/file/xxxx.jpg"}]
+        if (result && result[0] && result[0].src) {
+          return "https://telegra.ph" + result[0].src;
         }
       } catch (err) {
-        console.error("Upload Error:", err);
+        console.error("Telegra.ph Upload Error:", err);
       }
       return null;
     }
