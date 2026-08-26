@@ -147,7 +147,6 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      position: relative;
     }
 
     .file-item-header {
@@ -198,21 +197,6 @@
       font-size: 12px;
     }
 
-    .progress-bar-container {
-      width: 100%;
-      height: 5px;
-      background-color: #111;
-      border-radius: 3px;
-      overflow: hidden;
-    }
-
-    .progress-bar-fill {
-      height: 100%;
-      width: 0%;
-      background-color: #25c960;
-      transition: width 0.1s linear;
-    }
-
     .btn-submit {
       width: 100%;
       background-color: #ff7700;
@@ -233,6 +217,14 @@
 
     .btn-submit:hover {
       background-color: #e66a00;
+    }
+
+    .status-msg {
+      margin-top: 15px;
+      font-size: 13px;
+      text-align: center;
+      color: #ffaa00;
+      display: none;
     }
 
     .results-container {
@@ -337,14 +329,6 @@
       color: #ffffff !important;
     }
 
-    .status-msg {
-      margin-top: 15px;
-      font-size: 13px;
-      text-align: center;
-      color: #ffaa00;
-      display: none;
-    }
-
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -410,7 +394,7 @@
       </div>
       <div class="title-text">
         <h1>abidlink</h1>
-        <p>Upload and convert images to instant direct links</p>
+        <p>Fast image uploader & direct links</p>
       </div>
     </div>
     <div class="badge">
@@ -420,15 +404,15 @@
   </div>
 
   <div class="main-card">
-    <h2 class="main-title">Select images to upload (Up to 10 images)</h2>
-    <p class="sub-title">Please select files from your device</p>
+    <h2 class="main-title">Select images to upload</h2>
+    <p class="sub-title">Supports PNG, JPG, GIF, WEBP</p>
 
     <div class="upload-box" onclick="document.getElementById('fileInput').click()">
       <div class="upload-icon">
         <i class="fa-solid fa-image"></i>
       </div>
       <div class="upload-text">Click here to select images</div>
-      <div class="upload-subtext">You can select multiple images (Max 10 images)</div>
+      <div class="upload-subtext">Multiple selection supported</div>
     </div>
 
     <input type="file" id="fileInput" multiple accept="image/*" onchange="handleFiles(this.files)">
@@ -461,23 +445,13 @@
 
     function handleFiles(files) {
       const newFiles = Array.from(files);
-
-      if (selectedFiles.length + newFiles.length > 10) {
-        alert("Maximum limit is 10 images at a time!");
-        return;
-      }
-
       newFiles.forEach(file => {
         selectedFiles.push({
           file: file,
-          loaded: false,
-          progress: 0,
           previewUrl: URL.createObjectURL(file)
         });
       });
-
       renderFiles();
-      simulateProgress();
     }
 
     function renderFiles() {
@@ -486,18 +460,14 @@
 
       selectedFiles.forEach((item, index) => {
         const file = item.file;
-        const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+        const sizeInMB = (file.size / (1024 * 1024)).data ? 0 : (file.size / (1024 * 1024)).toFixed(2);
         const fileItem = document.createElement('div');
         fileItem.className = 'file-item';
-
-        const iconOrThumb = item.loaded
-          ? `<img src="${item.previewUrl}" class="thumb-mini" onclick="openModal('${item.previewUrl}')" alt="thumb">`
-          : `<i class="fa-regular fa-image" style="color: #ffaa00; font-size: 18px;"></i>`;
 
         fileItem.innerHTML = `
           <div class="file-item-header">
             <div class="file-info">
-              ${iconOrThumb}
+              <img src="${item.previewUrl}" class="thumb-mini" onclick="openModal('${item.previewUrl}')" alt="thumb">
               <span class="file-name">${file.name}</span>
               <span class="file-size">(${sizeInMB} MB)</span>
             </div>
@@ -505,30 +475,8 @@
               <i class="fa-solid fa-trash"></i> Delete
             </div>
           </div>
-          ${!item.loaded ? `
-          <div class="progress-bar-container">
-            <div class="progress-bar-fill" style="width: ${item.progress}%;"></div>
-          </div>` : ''}
         `;
         fileList.appendChild(fileItem);
-      });
-    }
-
-    function simulateProgress() {
-      selectedFiles.forEach((item) => {
-        if (!item.loaded) {
-          let interval = setInterval(() => {
-            if (item.progress >= 100) {
-              item.loaded = true;
-              item.progress = 100;
-              clearInterval(interval);
-              renderFiles();
-            } else {
-              item.progress += 25;
-              renderFiles();
-            }
-          }, 80);
-        }
       });
     }
 
@@ -546,28 +494,24 @@
       document.getElementById('imageModal').style.display = 'none';
     }
 
-    // الرفع المباشر لخدمة iili.io
+    // الرفع عبر سيرفر Catbox.moe (ما كيديرش مشاكل CORS وكيقبل أي ملفات مباشرة)
     async function uploadSingleFile(file) {
       try {
         let formData = new FormData();
-        formData.append("source", file);
-        formData.append("key", "6d207e02198a847aa98d0a2a901485a5");
-        formData.append("action", "upload");
-        formData.append("format", "json");
+        formData.append("reqtype", "fileupload");
+        formData.append("fileToUpload", file);
 
-        let response = await fetch("https://freeimage.host/api/1/upload", {
+        let response = await fetch("https://catbox.moe/user/api.php", {
           method: "POST",
           body: formData
         });
 
-        let result = await response.json();
-        
-        // النتيجة كترجع مباشرة بـ رابط https://iili.io/xxxxx.png
-        if (result && result.image && result.image.url) {
-          return result.image.url;
+        let directUrl = await response.text();
+        if (directUrl && directUrl.startsWith("http")) {
+          return directUrl.trim();
         }
       } catch (err) {
-        console.error("iili.io Upload Error:", err);
+        console.error("Upload Error:", err);
       }
       return null;
     }
@@ -582,7 +526,7 @@
       const uploadBtn = document.getElementById('uploadBtn');
 
       statusMsg.style.display = 'block';
-      statusMsg.innerText = "Uploading images to iili.io... Please wait.";
+      statusMsg.innerText = "Uploading images... Please wait.";
       uploadBtn.disabled = true;
       uploadBtn.style.opacity = "0.5";
 
@@ -596,11 +540,11 @@
           let htmlCode = `<img src="${directUrl}" alt="${file.name}">`;
           addResultCard(file.name, item.previewUrl, directUrl, htmlCode);
         } else {
-          alert("Upload error for: " + file.name + "\nPlease try again.");
+          alert("Upload failed for: " + file.name);
         }
       }
 
-      statusMsg.innerText = "Upload completed successfully!";
+      statusMsg.style.display = 'none';
       uploadBtn.disabled = false;
       uploadBtn.style.opacity = "1";
       selectedFiles = [];
