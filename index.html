@@ -546,13 +546,12 @@
       document.getElementById('imageModal').style.display = 'none';
     }
 
-    // دالة الرفع الأساسية والاحتياطية المضمونة 100%
+    // الرفع المباشر لخدمة iili.io
     async function uploadSingleFile(file) {
-      // 1. تجربة سيرفر FreeImage.host الأول
       try {
         let formData = new FormData();
         formData.append("source", file);
-        formData.append("key", "6d207e02198a847aa98d0a2a901485a5"); // FreeImage public API Key
+        formData.append("key", "6d207e02198a847aa98d0a2a901485a5");
         formData.append("action", "upload");
         formData.append("format", "json");
 
@@ -562,32 +561,14 @@
         });
 
         let result = await response.json();
+        
+        // النتيجة كترجع مباشرة بـ رابط https://iili.io/xxxxx.png
         if (result && result.image && result.image.url) {
           return result.image.url;
         }
       } catch (err) {
-        console.warn("Server 1 failed, trying fallback...", err);
+        console.error("iili.io Upload Error:", err);
       }
-
-      // 2. تجربة السيرفر الاحتياطي Catbox
-      try {
-        let formData = new FormData();
-        formData.append("reqtype", "fileupload");
-        formData.append("fileToUpload", file);
-
-        let response = await fetch("https://catbox.moe/user/api.php", {
-          method: "POST",
-          body: formData
-        });
-
-        let directUrl = await response.text();
-        if (directUrl && directUrl.startsWith("http")) {
-          return directUrl.trim();
-        }
-      } catch (err) {
-        console.error("Server 2 failed as well:", err);
-      }
-
       return null;
     }
 
@@ -601,7 +582,7 @@
       const uploadBtn = document.getElementById('uploadBtn');
 
       statusMsg.style.display = 'block';
-      statusMsg.innerText = "Uploading images... Please wait.";
+      statusMsg.innerText = "Uploading images to iili.io... Please wait.";
       uploadBtn.disabled = true;
       uploadBtn.style.opacity = "0.5";
 
@@ -615,7 +596,7 @@
           let htmlCode = `<img src="${directUrl}" alt="${file.name}">`;
           addResultCard(file.name, item.previewUrl, directUrl, htmlCode);
         } else {
-          alert("Upload failed for: " + file.name + ". Please try again.");
+          alert("Upload error for: " + file.name + "\nPlease try again.");
         }
       }
 
