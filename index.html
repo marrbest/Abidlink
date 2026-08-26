@@ -546,22 +546,6 @@
       document.getElementById('imageModal').style.display = 'none';
     }
 
-    // دالة اختصار الرابط لتفادي الروابط الطويلة جداً
-    async function getShortUrl(longUrl) {
-      try {
-        let res = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}`);
-        if (res.ok) {
-          let data = await res.json();
-          if (data.shorturl) {
-            return data.shorturl;
-          }
-        }
-      } catch (e) {
-        console.warn("Shortener error, fallback to direct URL:", e);
-      }
-      return longUrl; // إيلا طرا شي خطأ كيرجع الرابط الأصلي
-    }
-
     async function uploadFiles() {
       if (selectedFiles.length === 0) {
         alert("Please select images first!");
@@ -592,11 +576,8 @@
 
           let result = await response.json();
           if (result.success) {
-            // كياخد الرابط المباشر ديال الصورة من ImgBB
-            let rawUrl = result.data.image.url || result.data.url;
-            
-            // كيحولو لرابط قصير بزاف (مثال: https://is.gd/xyz)
-            let directUrl = await getShortUrl(rawUrl);
+            // كياخد display_url القصير المباشر من ImgBB نيشان (مثال: https://i.ibb.co/XyZ123/image.png)
+            let directUrl = result.data.display_url || result.data.url;
             let htmlCode = `<img src="${directUrl}" alt="${file.name}">`;
             
             addResultCard(file.name, item.previewUrl, directUrl, htmlCode);
@@ -656,7 +637,6 @@
     function copyText(btn) {
       const input = btn.previousElementSibling;
       
-      // النسخ السلس لحفظ ذاكرة الهاتف وتفادي التعليق
       if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(input.value).then(() => showCopied(btn));
       } else {
