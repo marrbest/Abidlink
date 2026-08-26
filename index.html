@@ -546,6 +546,22 @@
       document.getElementById('imageModal').style.display = 'none';
     }
 
+    // دالة اختصار الرابط لتفادي الروابط الطويلة جداً
+    async function getShortUrl(longUrl) {
+      try {
+        let res = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}`);
+        if (res.ok) {
+          let data = await res.json();
+          if (data.shorturl) {
+            return data.shorturl;
+          }
+        }
+      } catch (e) {
+        console.warn("Shortener error, fallback to direct URL:", e);
+      }
+      return longUrl; // إيلا طرا شي خطأ كيرجع الرابط الأصلي
+    }
+
     async function uploadFiles() {
       if (selectedFiles.length === 0) {
         alert("Please select images first!");
@@ -576,8 +592,11 @@
 
           let result = await response.json();
           if (result.success) {
-            // direct short url (e.g. https://i.ibb.co/xxxxx/filename.jpg)
-            let directUrl = result.data.image.url || result.data.url;
+            // كياخد الرابط المباشر ديال الصورة من ImgBB
+            let rawUrl = result.data.image.url || result.data.url;
+            
+            // كيحولو لرابط قصير بزاف (مثال: https://is.gd/xyz)
+            let directUrl = await getShortUrl(rawUrl);
             let htmlCode = `<img src="${directUrl}" alt="${file.name}">`;
             
             addResultCard(file.name, item.previewUrl, directUrl, htmlCode);
@@ -636,15 +655,25 @@
 
     function copyText(btn) {
       const input = btn.previousElementSibling;
-      navigator.clipboard.writeText(input.value).then(() => {
-        btn.innerText = "Copied!";
-        btn.classList.add("copied");
+      
+      // النسخ السلس لحفظ ذاكرة الهاتف وتفادي التعليق
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(input.value).then(() => showCopied(btn));
+      } else {
+        input.select();
+        document.execCommand('copy');
+        showCopied(btn);
+      }
+    }
 
-        setTimeout(() => {
-          btn.innerText = "Copy";
-          btn.classList.remove("copied");
-        }, 2000);
-      });
+    function showCopied(btn) {
+      btn.innerText = "Copied!";
+      btn.classList.add("copied");
+
+      setTimeout(() => {
+        btn.innerText = "Copy";
+        btn.classList.remove("copied");
+      }, 2000);
     }
   </script>
 
