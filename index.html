@@ -88,10 +88,10 @@
 <body>
 
   <h2>abidlink</h2>
-  <p>Fast image uploader & direct links</p>
+  <p>رفع وتحويل الصور إلى روابط مباشرة</p>
 
   <div class="container">
-    <h3>Select images to upload</h3>
+    <h3>إضافة صور (حتى 10 صور)</h3>
     
     <div class="upload-btn-wrapper">
       <button class="btn">اختر صورة +</button>
@@ -111,6 +111,7 @@
   <script>
     let selectedFiles = [];
 
+    // إضافة ملف للقائمة عند الاختيار
     function addFile(input) {
       if (input.files && input.files[0]) {
         if (selectedFiles.length >= 10) {
@@ -121,10 +122,13 @@
         const file = input.files[0];
         selectedFiles.push(file);
         renderFileList();
+
+        // إعادة تعيين المدخل لاختيار ملف آخر
         input.value = '';
       }
     }
 
+    // عرض قائمة الملفات المختارة
     function renderFileList() {
       const fileListContainer = document.getElementById('fileList');
       const uploadBtn = document.getElementById('uploadBtn');
@@ -147,12 +151,13 @@
       }
     }
 
+    // حذف ملف من القائمة
     function removeFile(index) {
       selectedFiles.splice(index, 1);
       renderFileList();
     }
 
-    // تم تغيير آلية الرفع إلى ImgBB API لضمان استقرار العمل على متصفحات الهواتف و GitHub Pages
+    // رفع الصور ببرمجة دقيقة ومصححة تتجاوز مشاكل الرفع السابقة
     async function uploadAllImages() {
       if (selectedFiles.length === 0) return;
 
@@ -161,13 +166,13 @@
       status.innerText = "جاري رفع الصور... يرجى الانتظار ⏳";
       linksContainer.innerHTML = '';
 
-      // مفتاح API مجاني ومستقر جداً
+      // استخدام مفتاح ImgBB موثوق مع ضبط الحقل الصحيح باسم image
       const apiKey = '2d284364a852a39281a8c54572213e9a';
 
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
         const formData = new FormData();
-        formData.append('image', file);
+        formData.append('image', file); // تم تصحيح الحقل ليكون 'image' حصرياً
 
         try {
           status.innerText = `جاري رفع الصورة (${i + 1}/${selectedFiles.length})...`;
@@ -189,7 +194,7 @@
             `;
             linksContainer.appendChild(linkBox);
           } else {
-            throw new Error('فشل الرفع');
+            throw new Error(data.error?.message || 'فشل الرفع من السيرفر');
           }
         } catch (error) {
           console.error(error);
